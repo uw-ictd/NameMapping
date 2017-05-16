@@ -4,29 +4,31 @@ import fuzzy as fz
 import jellyfish as jf
 import numpy as np
 from datetime import datetime
-import csv
+import time
+import pandas as pd
+
+import ipyparallel
+import subprocess
+
+import os
+
+os.chdir('../NameMapping')
+
+start_cluster_command = 'ipcluster start -n 4'
+subprocess.Popen(start_cluster_command)
 
 
-def readCsvFile(filename,hasHeader):
-	data = []
-	opFile = open(filename,'rU')
-	try:
-		reader = csv.reader(opFile)
-		rowNo = 0
-		for row in reader:
-			#print row
-			if rowNo == 0 and hasHeader:
-				header = row
-			else:
-				data.append(row)
-				colNo = 0
-				for col in row:
-					#print col
-					colNo += 1
-			rowNo += 1
-	finally:
-		opFile.close()
-	return data
+print('Starting Cluster')
+for i in range(0,100):
+    while True:
+        try:
+            clients = ipyparallel.Client()
+            dview = clients[:]
+        except:
+            time.sleep(5)
+            continue
+        break
+
 
 def removeRomanNumbers(value):
 	w = ['i','ii','iii','iv','v','vi','vii','viii','ix','x']
@@ -49,55 +51,56 @@ def isAscii(s):
 def isMatch(value1,value2):
 	dm = fz.DMetaphone()
 	soundex = fz.Soundex(7)
-	if isAscii(value1) and isAscii(value2):
+	try :
+		if isAscii(value1) and isAscii(value2):
 		#if jf.jaro_winkler(unicode(value1),unicode(value2))>0.88 and lv.distance(value1,value2)<4 and dm(value1)[0]==dm(value2)[0] and fz.nysiis(value1)==fz.nysiis(value2):
 		#if jf.jaro_winkler(unicode(value1),unicode(value2))>0.88 and lv.distance(value1,value2)<4 and dm(value1)[0]==dm(value2)[0]:
 		#if jf.jaro_winkler(unicode(value1),unicode(value2))>0.88 and dm(value1)[0]==dm(value2)[0]:
 		#if (jf.jaro_winkler(unicode(value1),unicode(value2))>0.88 and dm(value1)[0]==dm(value2)[0]) or (jf.jaro_winkler(unicode(value1),unicode(value2))>0.8399 and lv.distance(value1,value2)<4 and dm(value1)[0]==dm(value2)[0]) or (jf.jaro_winkler(unicode(removeRomanNumbers(removeBracketWords(value1))),unicode(removeRomanNumbers(removeBracketWords(value2))))>0.88 and dm(removeRomanNumbers(removeBracketWords(value1)))[0]==dm(removeRomanNumbers(removeBracketWords(value2)))[0]):
 		#if (jf.jaro_winkler(unicode(value1),unicode(value2))>0.88 and dm(value1)[0]==dm(value2)[0]) or (jf.jaro_winkler(unicode(value1),unicode(value2))>0.8399 and lv.distance(value1,value2)<4 and dm(value1)[0]==dm(value2)[0]) or (jf.jaro_winkler(unicode(removeBracketWords(value1)),unicode(removeBracketWords(value2)))>0.88 and dm(removeBracketWords(value1))[0]==dm(removeBracketWords(value2))[0]):
-		jaro_dist = jf.jaro_winkler(unicode(value1),unicode(value2))
-		jaro_dist_clean = jf.jaro_winkler(unicode(removeRomanNumbers(removeBracketWords(value1))), unicode(removeRomanNumbers(removeBracketWords(value2))))
-		metaphone_1 = dm(value1)[0]
-		metaphone_2 = dm(value2)[0]
-		metaphone_1_clean = dm(removeRomanNumbers(removeBracketWords(value1)))[0]
-		metaphone_2_clean = dm(removeRomanNumbers(removeBracketWords(value2)))[0]
-		levenshtein_dist = lv.distance(value1,value2)
+			jaro_dist = jf.jaro_winkler(unicode(value1),unicode(value2))
+			jaro_dist_clean = jf.jaro_winkler(unicode(removeRomanNumbers(removeBracketWords(value1))), unicode(removeRomanNumbers(removeBracketWords(value2))))
+			metaphone_1 = dm(value1)[0]
+			metaphone_2 = dm(value2)[0]
+			metaphone_1_clean = dm(removeRomanNumbers(removeBracketWords(value1)))[0]
+			metaphone_2_clean = dm(removeRomanNumbers(removeBracketWords(value2)))[0]
+			levenshtein_dist = lv.distance(value1,value2)
 
-		matched = (jaro_dist > 0.88 and metaphone_1 == metaphone_2) or \
-				( jaro_dist >0.8399 and levenshtein_dist <4 and metaphone_1 == metaphone_2 ) or \
-				(jaro_dist_clean > 0.88 and  metaphone_1_clean == metaphone_2_clean)
+			matched = (jaro_dist > 0.88 and metaphone_1 == metaphone_2) or \
+					( jaro_dist >0.8399 and levenshtein_dist <4 and metaphone_1 == metaphone_2 ) or \
+					(jaro_dist_clean > 0.88 and  metaphone_1_clean == metaphone_2_clean)
 
-		output = [matched , jaro_dist , jaro_dist_clean , metaphone_1 , metaphone_2 , metaphone_1_clean , metaphone_2_clean , levenshtein_dist]
-		return output
+			output = {'matched':matched , 'jaro_dist':jaro_dist , 'jaro_dist_clean':jaro_dist_clean , 'metaphone_1':metaphone_1 , 'metaphone_2':metaphone_2 , 'metaphone_1_clean':metaphone_1_clean , 'metaphone_2_clean':metaphone_2_clean , 'levenshtein_dist':levenshtein_dist}
+			return output
+	except TypeError :
+		pass
 
-def findMatches(data1 , data2 , ouptut_file):
-	f = open(ouptut_file, 'wt')
-	perc = 0
-	count = 0
-	l = len(data1)
-	try:
-		writer = csv.writer(f, quoting=csv.QUOTE_ALL)
-		writer.writerow( ('ID', 'commune_ID', 'localite', 'localite_ID', 'source', 'ID', 'commune_ID', 'localite', 'localite_ID', 'source' , 'matched' , 'jaro_dist' , 'jaro_dist_clean' , 'metaphone_1' , 'metaphone_2' , 'metaphone_1_clean' , 'metaphone_2_clean' , 'levenshtein_dist') )
-		for row1 in data1:
-			count = count + 1
-			stream = count / l
-			if int(stream * 100) > perc :
-				perc = int(stream * 100)
-				print str(perc) + " % made"
-			for row2 in data2:
-				if row1[1]==row2[1]:
-					match_result = isMatch(row1[2],row2[2])
-					if (type(match_result) == list):
-						writer.writerow( (row1[0] , row1[1] , row1[2] , row1[3] , row1[4] , \
-						row2[0] , row2[1] , row2[2] , row2[3] , row2[4] , \
-						match_result[0] , match_result[1] , match_result[2] , match_result[3] , match_result[4] , match_result[5] , match_result[6] , match_result[7]))
+def match_and_output(data2 , data1):
+	localite_1 = data1['localite']
+	localite_2 = data2['localite'].iloc[0]
+	match_result = isMatch(localite_1 , localite_2)
+	if (type(match_result) == dict):
+		match_result['localite_1'] = localite_1
+		match_result['localite_2'] = localite_2
+		match_out = pd.DataFrame(match_result , index = [data1['ID']])
+		return match_out
 
-	finally:
-		f.close()
+def findMatches(data1 , data2):
+	data1 = data1.iloc[0]
+	print(data1['localite_ID'])
+	commune_ID = data1['commune_ID']
+	data2_commune = data2[data2.commune_ID == commune_ID]
+	data_out = data2_commune.groupby('localite_ID').apply(match_and_output , data1)
+	return data_out.reset_index()
 
-# TODO Move into pandas : easier for subsetting
-data1 = readCsvFile('renaloc_data.csv',True)
-data2 = readCsvFile('bureau_data.csv',True)
 
+
+#data1 = pd.read_csv('renaloc_data.csv')
+#data2 = pd.read_csv('bureau_data.csv')
+
+
+## Create Cluster to run
 %%time
-findMatches(data1 , data2 , 'renaloc_bureau_full.csv')
+out = data1.groupby(['commune_ID' , 'localite_ID']).apply(findMatches , data2)
+
+out.write_csv('renaloc_bureau_full.csv')
