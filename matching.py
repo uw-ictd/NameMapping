@@ -103,4 +103,6 @@ def findMatches(data1 , data2):
 %%time
 out = data1.groupby(['commune_ID' , 'localite_ID']).apply(findMatches , data2)
 
-out.write_csv('renaloc_bureau_full.csv')
+
+
+out.to_csv('renaloc_bureau_full.csv')
