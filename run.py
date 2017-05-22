@@ -3,6 +3,7 @@ import pandas as pd
 import ipyparallel
 import subprocess
 
+from unsupervised_algorithms import *
 
 data1 = pd.read_csv('renaloc_data.csv')
 data2 = pd.read_csv('bureau_data.csv')
