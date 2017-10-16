@@ -4,7 +4,7 @@ import fuzzy as fz
 import jellyfish as jf
 import numpy as np
 from datetime import datetime
-import csv
+import pandas as pd
 
 
 def readCsvFile(filename,hasHeader):
@@ -67,7 +67,7 @@ def findMatches(data1,data2):
 		writer = csv.writer(f, quoting=csv.QUOTE_ALL)
 		writer.writerow( ('ID', 'commune_ID', 'localite', 'localite_ID', 'source', 'ID', 'commune_ID', 'localite', 'localite_ID', 'source') )
 		for row1 in data1:
-			print row1[0]
+			print(row1[0])
 			for row2 in data2:
 				if row1[1]==row2[1]:
 					#print row1[1]+' <-> '+row2[1]
@@ -80,14 +80,13 @@ def findMatches(data1,data2):
 			#	break
 	finally:
 		f.close()
-	
+
 	ed = datetime.now()
 	dif = ed-st
-	print dif
-	print counter
+	print(dif)
+	print(counter)
 
 
-data1 = readCsvFile('renaloc_data.csv',True)
+data1 = pd.read_csv('renaloc_data.csv' , encoding = )
 data2 = readCsvFile('bureau_data.csv',True)
 findMatches(data1,data2)
-
