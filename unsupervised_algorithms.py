@@ -17,8 +17,8 @@ def isMatch(value1,value2):
     soundex = fz.Soundex(7)
     try :
         if isAscii(value1) and isAscii(value2):
-            jaro_dist = jf.jaro_winkler(unicode(value1),unicode(value2))
-            jaro_dist_clean = jf.jaro_winkler(unicode(removeRomanNumbers(removeBracketWords(value1))), unicode(removeRomanNumbers(removeBracketWords(value2))))
+            jaro_dist = jf.jaro_winkler(str(value1),str(value2))
+            jaro_dist_clean = jf.jaro_winkler(str(removeRomanNumbers(removeBracketWords(value1))), str(removeRomanNumbers(removeBracketWords(value2))))
             metaphone_1 = dm(value1)[0]
             metaphone_2 = dm(value2)[0]
             metaphone_1_clean = dm(removeRomanNumbers(removeBracketWords(value1)))[0]
