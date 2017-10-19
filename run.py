@@ -5,8 +5,8 @@ import subprocess
 
 from unsupervised_algorithms import *
 
-data1 = pd.read_csv('renaloc_data.csv')
-data2 = pd.read_csv('bureau_data.csv')
+data1 = pd.read_csv('renaloc_data.csv', encoding = "ISO-8859-1")
+data2 = pd.read_csv('bureau_data.csv', encoding = "ISO-8859-1")
 
 
 start_cluster_command = 'ipcluster start -n 4'
