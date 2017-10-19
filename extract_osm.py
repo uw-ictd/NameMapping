@@ -1,18 +1,15 @@
 # data from https://download.geofabrik.de/africa/niger.html
 from osmread import parse_file, Node
+import pandas as pd
+
 highway_count = 0
 
-%%time
-a = []
+places = []
 for entity in parse_file('niger-latest.osm.pbf'):
-    if isinstance(entity, Node) and 'place' in entity.tags:
+    if isinstance(entity, Node) and 'name' in entity.tags:
         place = {'lon':entity.lon , 'lat':entity.lat , 'name':entity.tags['name']}
-        a.append(entity)
+        places.append(place)
 
-import pandas as pd
-u = pd.DataFrame.from_dict(a)
+out_data_frame = pd.DataFrame(places)
 
-print("%d highways found" % highway_count)
-
-u=a[0]
-u.tags['name']
+out_data_frame.to_csv('osm_data.csv')
