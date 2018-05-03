@@ -21,10 +21,37 @@ A validation set is produced by both manually matching locality names and by val
 
 ## Methods
 
-Our approach relies on a mixture of available string matching algorithms. We use these algorithms and define a heuritstic to combine them and select best matches. We enrich these heurstics by defining patterns and features that allow a first classification and simplification of names to improve matching performace. These patterns may be data source specific.
+Our approach relies on a mixture of available string matching algorithms. We use these algorithms and define heuritstics to combine them and select best matches. We enrich these heurstics by defining patterns and features that allow a first simplification of names to improve matching performace. These patterns may be data source specific.
 
-### Traditional string matching algorithms
+### Pre Processing
+When given two datasets, our first step will be to preprocess the data to spot locally-specific patterns to take care of. These can involve :
+1. Common prefixes and suffixes
+2. Different transliteration patterns (eg _w_ vs _ou_ for the same sound)
 
-### Algorithms mixture
+These patterns can be spotted by the application presented for validation to the user, or the user should be able to specify them.
 
-### Name patterns recognition
+### Cleaning
+In a second step, we define string cleaning heuristics, to remove irregularities or differences in conventions that may affect the ability to match the different data sources. These heuristics involve (among other):
+1. Unifying numerals in diverse forms (i. ii. iii. , I II III ...)
+2. Removing brackets
+3. Splitting and recombining N-Grams of the different strings we want to match
+
+### Unsupervised Algorithm
+We also define different metrics of proximity between the data sets we want to match. Currently used metrics are :
+[Jaro-Winkler proximity](https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance) and [Levenshtein distance](https://en.wikipedia.org/wiki/Levenshtein_distance), [Double Metaphone transliteration](https://en.wikipedia.org/wiki/Metaphone).
+
+For each commune, all possible name pairs between the tow sources are compared, and all possible metrics are measured, for raw or cleaned data. A first match is then made based on pre-specified thresholds.
+
+### Unsupervised iterative trimming
+In a latter stage, we will iteratively go through the measured pairs, and we will test different heuristics to check systematic variations that can be filtered before matching. These heuristics can include combinations of simple operations such as :
+
+1. N-Gram splitting and recombining
+2. Strings cleaning as describe above
+3. Prefix / suffix trimming or translitation variation
+
+The iterative trimming will be made through a process of elimination that will validate easy matches and will later on narrow down on remaining names to converge towards the most complete matching possible.
+
+### Supervised algorithms
+Finally, we will devise a method for user validation of the matched pairs, which will lead to fitting supervised learning algorithms for remaining data.
+
+The cost-benefit of implementing such user interaction and computation will be compared to simple unsupervised approaches.
