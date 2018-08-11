@@ -14,4 +14,4 @@ def determineSuffix():
 def checkTranliterationDifferences():
     """ Checks for different ways to transliterate similar sounds
     """
-    pass 
+    pass
